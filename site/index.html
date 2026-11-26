@@ -161,6 +161,12 @@ mark.tip { background: color-mix(in srgb, var(--star) 28%, transparent); color: 
 @media (prefers-reduced-motion: no-preference) {
   .reply { transition: background 0.3s ease; }
 }
+dialog#signup { border: 1px solid var(--line); border-radius: 14px; padding: 0; width: min(480px, calc(100vw - 32px)); background: var(--surface); color: var(--ink); }
+dialog#signup::backdrop { background: rgb(6 22 27 / 0.55); }
+dialog#signup form { border: 0; border-radius: 0; }
+dialog#signup .dlg-head { display: flex; justify-content: space-between; align-items: start; gap: 12px; }
+dialog#signup .close { background: none; border: 0; font-size: 1.6rem; line-height: 1; color: var(--muted); cursor: pointer; padding: 0 4px; }
+.hp { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
 /* The paste-your-own demo needs a server endpoint; hidden until it exists. */
 .chip[data-review="custom"] { display: none; }
 </style>
@@ -282,7 +288,7 @@ mark.tip { background: color-mix(in srgb, var(--star) 28%, transparent); color: 
       <div>
         <p class="eyebrow">Free review check</p>
         <h2 style="margin-top:12px">How many of your Google reviews are still waiting for a reply?</h2>
-        <p style="margin-top:16px;color:var(--muted)">We look at your public Google reviews and email you a short report: what's unanswered, how long customers have waited, and how you compare with nearby competitors.</p>
+        <p style="margin-top:16px;color:var(--muted)">We look at your public Google reviews and, within 2 business days, email you a short report: what's unanswered, how long customers have waited, and how you compare with nearby competitors.</p>
         <ul class="qlist" aria-label="Sample report lines">
           <li><span>Reviews in the last 12 months</span><span>38</span></li>
           <li><span>Still unanswered</span><span class="no">21</span></li>
@@ -303,6 +309,7 @@ mark.tip { background: color-mix(in srgb, var(--star) 28%, transparent); color: 
         <label for="f-area">Neighborhood or town<input id="f-area" name="area" required placeholder="Astoria, Queens"></label>
         <label for="f-email">Email for the report<input id="f-email" name="email" type="email" required autocomplete="email" placeholder="you@business.com"></label>
         <label class="consent" for="f-news"><input id="f-news" name="newsletter" type="checkbox"> Also send me the weekly tip on handling reviews. Unsubscribe anytime.</label>
+        <label class="hp" aria-hidden="true">Leave this empty<input name="website" tabindex="-1" autocomplete="off"></label>
         <button class="btn" type="submit">Email my free review check</button>
         <p id="form-status" role="status"></p>
       </form>
@@ -370,8 +377,28 @@ mark.tip { background: color-mix(in srgb, var(--star) 28%, transparent); color: 
 
   <footer>
     <span>© 2026 Reply Ally LLC</span>
-    <span>Questions: hello@replyally.net</span>
+    <span><a href="/privacy">Privacy</a> · Questions: <a href="mailto:hello@replyally.net">hello@replyally.net</a></span>
   </footer>
+
+  <dialog id="signup" aria-labelledby="su-title">
+    <form id="signup-form" method="dialog" novalidate>
+      <div class="dlg-head">
+        <div>
+          <p class="eyebrow" id="su-plan">Pro plan</p>
+          <h3 id="su-title" style="margin-top:6px">Start your 14-day free trial</h3>
+        </div>
+        <button class="close" type="button" id="su-close" aria-label="Close">×</button>
+      </div>
+      <p style="color:var(--muted);font-size:0.95rem">We're opening trials to a small group of businesses at a time. Leave your details and we'll email you when your trial is ready to start. No card needed.</p>
+      <label for="s-business">Business name<input id="s-business" name="business" required autocomplete="organization" maxlength="200"></label>
+      <label for="s-area">Neighborhood or town<input id="s-area" name="area" required maxlength="200" placeholder="Astoria, Queens"></label>
+      <label for="s-email">Email<input id="s-email" name="email" type="email" required autocomplete="email" maxlength="254"></label>
+      <input type="hidden" name="plan" id="s-plan" value="Pro">
+      <label class="hp" aria-hidden="true">Leave this empty<input name="website" tabindex="-1" autocomplete="off"></label>
+      <button class="btn" type="submit">Save my spot</button>
+      <p id="signup-status" role="status" style="font-size:0.92rem"></p>
+    </form>
+  </dialog>
 </div>
 
 <script>
@@ -530,10 +557,46 @@ mark.tip { background: color-mix(in srgb, var(--star) 28%, transparent); color: 
   });
   renderDemo();
 
+  var dlg = document.getElementById('signup');
+  var sForm = document.getElementById('signup-form');
+  var sStatus = document.getElementById('signup-status');
+  function openSignup(plan) {
+    plan = plan || 'Pro';
+    document.getElementById('s-plan').value = plan;
+    document.getElementById('su-plan').textContent = plan + ' plan';
+    sStatus.textContent = '';
+    sForm.querySelector('button[type=submit]').style.display = '';
+    if (dlg.showModal) dlg.showModal(); else dlg.setAttribute('open', '');
+  }
   document.querySelectorAll('.start-trial').forEach(function (b) {
-    b.addEventListener('click', function () {
-      document.getElementById('trial-status').textContent = 'Signup for the ' + b.dataset.plan + ' plan opens when Reply Ally launches. This preview doesn’t create an account.';
-    });
+    b.addEventListener('click', function () { openSignup(b.dataset.plan); });
+  });
+  document.querySelectorAll('a[href="#pricing"]').forEach(function (a) {
+    if (/trial/i.test(a.textContent)) a.addEventListener('click', function (e) { e.preventDefault(); openSignup('Pro'); });
+  });
+  document.getElementById('su-close').addEventListener('click', function () { dlg.close(); });
+  sForm.addEventListener('submit', function (e) {
+    e.preventDefault();
+    if (!sForm.checkValidity()) {
+      sStatus.textContent = 'Please fill in your business name, town and a valid email.';
+      sStatus.style.color = 'var(--warn)';
+      return;
+    }
+    sStatus.textContent = 'Saving…';
+    sStatus.style.color = 'var(--muted)';
+    var data = Object.fromEntries(new FormData(sForm).entries());
+    fetch('/api/signup', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) })
+      .then(function (r) {
+        if (!r.ok) throw new Error(r.status);
+        sStatus.textContent = 'You\u2019re on the list. We\u2019ll email ' + data.email + ' when your ' + data.plan + ' trial is ready.';
+        sStatus.style.color = 'var(--ok)';
+        sForm.querySelector('button[type=submit]').style.display = 'none';
+        sForm.reset();
+      })
+      .catch(function () {
+        sStatus.textContent = 'Something went wrong, so nothing was saved. Please try again, or email hello@replyally.net.';
+        sStatus.style.color = 'var(--warn)';
+      });
   });
 
   var form = document.getElementById('report-form');
@@ -551,12 +614,12 @@ mark.tip { background: color-mix(in srgb, var(--star) 28%, transparent); color: 
     fetch('/api/report', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) })
       .then(function (r) {
         if (!r.ok) throw new Error(r.status);
-        status.textContent = 'Got it. Your review check will arrive at ' + data.email + ' within a few minutes.';
+        status.textContent = 'Got it. We\u2019ll email your review check to ' + data.email + ' within 2 business days.';
         status.style.color = 'var(--ok)';
         form.reset();
       })
       .catch(function () {
-        status.textContent = 'The review check isn’t live yet, so nothing was sent. Please try again soon.';
+        status.textContent = 'Something went wrong, so nothing was sent. Please try again, or email hello@replyally.net.';
         status.style.color = 'var(--warn)';
       });
   });
