@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Welcome · Reply Ally</title>
+<meta name="robots" content="noindex">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@600;700&family=Public+Sans:wght@400;500&display=swap">
+<style>
+:root { --bg: #f4f7f8; --ink: #0f2a33; --muted: #4d6670; --harbor: #0e5a6b; --line: #d5e0e4; }
+@media (prefers-color-scheme: dark) { :root { --bg: #0b1a1f; --ink: #e6f0f2; --muted: #9db3ba; --harbor: #4fb3c6; --line: #24414a; } }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 17px/1.6 "Public Sans", system-ui, sans-serif; padding: 0 16px; }
+main { max-width: 720px; margin: 0 auto; padding: 40px 0 64px; }
+h1, h2 { font-family: "Familjen Grotesk", sans-serif; line-height: 1.15; }
+h2 { font-size: 1.25rem; margin-top: 32px; }
+p, li { color: var(--muted); }
+a { color: var(--harbor); }
+.back { font-weight: 600; text-decoration: none; }
+</style>
+</head>
+<body>
+<main>
+<a class="back" href="/">← Reply Ally</a>
+<h1>Your free trial has started</h1>
+<p id="plan-line">Thanks for starting your 14-day Reply Ally trial.</p>
+
+<h2>What happens next</h2>
+<ul>
+<li>Within 1 business day we'll email you from hello@replyally.net to connect your Google Business Profile, so we can start answering your reviews.</li>
+<li>You won't be charged during the trial. If you'd like to keep going after 14 days, Stripe will ask you to add a card. If you don't, your trial simply stops.</li>
+<li>Questions, or want to cancel? Just reply to any of our emails or write to <a href="mailto:hello@replyally.net">hello@replyally.net</a>.</li>
+</ul>
+</main>
+<script>
+(function () {
+  var plan = new URLSearchParams(location.search).get('plan');
+  if (['Starter', 'Pro', 'Premium'].indexOf(plan) > -1)
+    document.getElementById('plan-line').textContent = 'Thanks for starting your 14-day Reply Ally ' + plan + ' trial.';
+})();
+</script>
+</body>
+</html>

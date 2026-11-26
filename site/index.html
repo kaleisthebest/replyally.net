@@ -389,13 +389,13 @@ dialog#signup .close { background: none; border: 0; font-size: 1.6rem; line-heig
         </div>
         <button class="close" type="button" id="su-close" aria-label="Close">×</button>
       </div>
-      <p style="color:var(--muted);font-size:0.95rem">We're opening trials to a small group of businesses at a time. Leave your details and we'll email you when your trial is ready to start. No card needed.</p>
+      <p style="color:var(--muted);font-size:0.95rem">Tell us about your business, then confirm on our secure Stripe checkout page. No card needed. If you don't add a card by the end of the 14 days, your trial simply stops and you're never charged.</p>
       <label for="s-business">Business name<input id="s-business" name="business" required autocomplete="organization" maxlength="200"></label>
       <label for="s-area">Neighborhood or town<input id="s-area" name="area" required maxlength="200" placeholder="Astoria, Queens"></label>
       <label for="s-email">Email<input id="s-email" name="email" type="email" required autocomplete="email" maxlength="254"></label>
       <input type="hidden" name="plan" id="s-plan" value="Pro">
       <label class="hp" aria-hidden="true">Leave this empty<input name="website" tabindex="-1" autocomplete="off"></label>
-      <button class="btn" type="submit">Save my spot</button>
+      <button class="btn" type="submit">Continue to start my trial</button>
       <p id="signup-status" role="status" style="font-size:0.92rem"></p>
     </form>
   </dialog>
@@ -557,6 +557,11 @@ dialog#signup .close { background: none; border: 0; font-size: 1.6rem; line-heig
   });
   renderDemo();
 
+  var CHECKOUT = {
+    Starter: 'https://buy.stripe.com/7sY6oJ0FpfYe3PudrQ7bW00',
+    Pro: 'https://buy.stripe.com/8x2eVf9bV6nE0DifzY7bW01',
+    Premium: 'https://buy.stripe.com/9B69AV87R27o2Lq3Rg7bW02'
+  };
   var dlg = document.getElementById('signup');
   var sForm = document.getElementById('signup-form');
   var sStatus = document.getElementById('signup-status');
@@ -588,10 +593,11 @@ dialog#signup .close { background: none; border: 0; font-size: 1.6rem; line-heig
     fetch('/api/signup', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) })
       .then(function (r) {
         if (!r.ok) throw new Error(r.status);
-        sStatus.textContent = 'You\u2019re on the list. We\u2019ll email ' + data.email + ' when your ' + data.plan + ' trial is ready.';
+        sStatus.textContent = 'Taking you to secure checkout\u2026';
         sStatus.style.color = 'var(--ok)';
         sForm.querySelector('button[type=submit]').style.display = 'none';
-        sForm.reset();
+        var link = CHECKOUT[data.plan] || CHECKOUT.Pro;
+        window.location.href = link + '?prefilled_email=' + encodeURIComponent(data.email);
       })
       .catch(function () {
         sStatus.textContent = 'Something went wrong, so nothing was saved. Please try again, or email hello@replyally.net.';
