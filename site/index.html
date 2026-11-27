@@ -377,7 +377,7 @@ dialog#signup .close { background: none; border: 0; font-size: 1.6rem; line-heig
 
   <footer>
     <span>© 2026 Reply Ally LLC</span>
-    <span><a href="/privacy">Privacy</a> · Questions: <a href="mailto:hello@replyally.net">hello@replyally.net</a></span>
+    <span><a href="/terms">Terms</a> · <a href="/privacy">Privacy</a> · Questions: <a href="mailto:hello@replyally.net">hello@replyally.net</a></span>
   </footer>
 
   <dialog id="signup" aria-labelledby="su-title">
@@ -396,6 +396,7 @@ dialog#signup .close { background: none; border: 0; font-size: 1.6rem; line-heig
       <input type="hidden" name="plan" id="s-plan" value="Pro">
       <label class="hp" aria-hidden="true">Leave this empty<input name="website" tabindex="-1" autocomplete="off"></label>
       <button class="btn" type="submit">Continue to start my trial</button>
+      <p style="color:var(--muted);font-size:0.85rem;margin:8px 0 0">By starting a trial you agree to the <a href="/terms" target="_blank" rel="noopener">Terms</a> and <a href="/privacy" target="_blank" rel="noopener">Privacy Policy</a>, including letting us post replies to your Google reviews as described there.</p>
       <p id="signup-status" role="status" style="font-size:0.92rem"></p>
     </form>
   </dialog>
